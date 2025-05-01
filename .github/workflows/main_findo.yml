@@ -68,13 +68,23 @@ jobs:
             Write-Output "AZURE_CREDENTIALS secret is set"
           }
 
-      # Step 3: Login to Azure using Service Principal creds
+      # Step 3: Debug Secret Structure
+      - name: Debug Secret Structure
+        shell: powershell
+        run: |
+          $creds = '${{ secrets.AZURE_CREDENTIALS }}' | ConvertFrom-Json
+          Write-Output "clientId present: $($creds.clientId -ne $null)"
+          Write-Output "tenantId present: $($creds.tenantId -ne $null)"
+          Write-Output "clientSecret present: $($creds.clientSecret -ne $null)"
+          Write-Output "subscriptionId present: $($creds.subscriptionId -ne $null)"
+
+      # Step 4: Login to Azure using Service Principal creds
       - name: Azure Login
         uses: azure/login@v1.6.1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Step 4: Deploy to Azure Web App
+      # Step 5: Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
@@ -83,7 +93,7 @@ jobs:
           slot-name: 'Production'
           package: release.zip
 
-      # Step 5: Post Azure Login
+      # Step 6: Post Azure Login
       - name: Post Azure Login
         if: always()
         run: echo "Post Azure Login step"
