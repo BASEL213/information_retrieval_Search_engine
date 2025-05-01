@@ -6,36 +6,45 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
       # Step 1: Checkout the repository
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Step 2: Set up Python version
       - name: Set up Python version
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.11.9'
+          python-version: '3.11'
 
       # Step 3: Create and start virtual environment, install dependencies
       - name: Create and start virtual environment
-        shell: powershell
+        shell: bash
         run: |
           python -m venv venv
-          .\venv\Scripts\Activate.ps1
+          source venv/bin/activate
           pip install -r requirements.txt
 
       # Step 4: Create zip artifact for deployment
       - name: Create zip artifact for deployment
-        shell: powershell
-        run: Compress-Archive -Path * -DestinationPath release.zip -Force
+        shell: bash
+        run: |
+          mkdir -p app
+          cp -r *.py requirements.txt app/
+          cd app
+          zip -r ../release.zip .
+        working-directory: .
 
       # Step 5: Upload artifact for deployment jobs
       - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-app
           path: release.zip
@@ -45,46 +54,22 @@ jobs:
     needs: build
     environment:
       name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      contents: read
-      id-token: write
+      url: https://Findo.azurewebsites.net
 
     steps:
       # Step 1: Download artifact from build job
       - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      # Step 2: Debug Secret Presence
-      - name: Debug Secret Presence
-        shell: powershell
-        run: |
-          if ("${{ secrets.AZURE_CREDENTIALS }}" -eq "") {
-            Write-Output "Error: AZURE_CREDENTIALS secret is not set or empty"
-            exit 1
-          } else {
-            Write-Output "AZURE_CREDENTIALS secret is set"
-          }
-
-      # Step 3: Debug Secret Structure
-      - name: Debug Secret Structure
-        shell: powershell
-        run: |
-          $creds = '${{ secrets.AZURE_CREDENTIALS }}' | ConvertFrom-Json
-          Write-Output "clientId present: $($creds.clientId -ne $null)"
-          Write-Output "tenantId present: $($creds.tenantId -ne $null)"
-          Write-Output "clientSecret present: $($creds.clientSecret -ne $null)"
-          Write-Output "subscriptionId present: $($creds.subscriptionId -ne $null)"
-
-      # Step 4: Login to Azure using Service Principal creds
+      # Step 2: Login to Azure using Service Principal creds
       - name: Azure Login
         uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Step 5: Deploy to Azure Web App
+      # Step 3: Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
@@ -92,8 +77,3 @@ jobs:
           app-name: 'Findo'
           slot-name: 'Production'
           package: release.zip
-
-      # Step 6: Post Azure Login
-      - name: Post Azure Login
-        if: always()
-        run: echo "Post Azure Login step"
