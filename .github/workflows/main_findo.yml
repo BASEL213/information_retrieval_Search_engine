@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       # Step 1: Checkout the repository
@@ -39,7 +39,7 @@ jobs:
           path: release.zip
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     environment:
       name: 'Production'
@@ -57,13 +57,13 @@ jobs:
 
       # Step 2: Login to Azure using Service Principal creds
       - name: Azure Login
-        uses: azure/login@v3
+        uses: azure/login@v2.2.0 
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       # Step 3: Deploy to Azure Web App
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v
         id: deploy-to-webapp
         with:
           app-name: 'Findo'
