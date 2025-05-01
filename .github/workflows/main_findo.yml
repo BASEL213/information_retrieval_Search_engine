@@ -53,33 +53,26 @@ jobs:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write # Required for Azure login via OIDC
+      contents: read
+      id-token: write
 
     steps:
-      # Step 1: Download artifact from the build job
+      # Step 1: Download artifact from build job
       - name: Download artifact from build job
         uses: actions/download-artifact@v4
         with:
           name: python-app
 
-      # Step 2: Unzip artifact using PowerShell
+      # Step 2: Unzip artifact
       - name: Unzip artifact for deployment
         shell: powershell
         run: Expand-Archive -Path release.zip -DestinationPath . -Force
 
-      # Step 3: Login to Azure
+      # Step 3: Login to Azure using Service Principal creds
       - name: Azure Login
-        uses: azure/login@v3
+        uses: azure/login@v1.6.1
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
-          auth-type: SERVICE_PRINCIPAL
-          enable-AzPSSession: false
-          environment: azurecloud
-          audience: api://AzureADTokenExchange
-
-
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       # Step 4: Deploy to Azure Web App
       - name: Deploy to Azure Web App
