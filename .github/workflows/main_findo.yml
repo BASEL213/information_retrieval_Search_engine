@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       # Step 1: Checkout the repository
@@ -20,34 +20,26 @@ jobs:
         with:
           python-version: '3.11'
 
-      # Step 3: Create and start virtual environment
+      # Step 3: Create and start virtual environment, install dependencies
       - name: Create and start virtual environment
-        shell: powershell
         run: |
           python -m venv venv
-          .\venv\Scripts\Activate.ps1
+          source venv/bin/activate
+          pip install -r requirements.txt
 
-      # Step 4: Install dependencies
-      - name: Install dependencies
-        shell: powershell
-        run: pip install -r requirements.txt
-
-      # Step 5: Create zip artifact for deployment
+      # Step 4: Create zip artifact for deployment
       - name: Create zip artifact for deployment
-        shell: powershell
-        run: Compress-Archive -Path * -DestinationPath release.zip -Force
+        run: zip -r release.zip . -x "venv/*"
 
-      # Step 6: Upload artifact for deployment jobs
+      # Step 5: Upload artifact for deployment jobs
       - name: Upload artifact for deployment jobs
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            release.zip
-            !venv/
+          path: release.zip
 
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     environment:
       name: 'Production'
@@ -63,23 +55,17 @@ jobs:
         with:
           name: python-app
 
-      # Step 2: Unzip artifact
-      - name: Unzip artifact for deployment
-        shell: powershell
-        run: Expand-Archive -Path release.zip -DestinationPath . -Force
-
-      # Step 3: Login to Azure using Service Principal creds
+      # Step 2: Login to Azure using Service Principal creds
       - name: Azure Login
         uses: azure/login@v1.6.1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Step 4: Deploy to Azure Web App
+      # Step 3: Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'Findo'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.MY_SECRECT_2 }}
-          package: .
+          package: release.zip
