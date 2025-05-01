@@ -57,7 +57,7 @@ jobs:
 
       # Step 2: Login to Azure using Service Principal creds
       - name: Azure Login
-        uses: azure/login@v1.6.1
+        uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
