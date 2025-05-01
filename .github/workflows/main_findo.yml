@@ -22,14 +22,16 @@ jobs:
 
       # Step 3: Create and start virtual environment, install dependencies
       - name: Create and start virtual environment
+        shell: powershell
         run: |
           python -m venv venv
-          source venv/bin/activate
+          .\venv\Scripts\Activate.ps1
           pip install -r requirements.txt
 
       # Step 4: Create zip artifact for deployment
       - name: Create zip artifact for deployment
-        run: zip -r release.zip . -x "venv/*"
+        shell: powershell
+        run: Compress-Archive -Path * -DestinationPath release.zip -Force
 
       # Step 5: Upload artifact for deployment jobs
       - name: Upload artifact for deployment jobs
@@ -57,13 +59,13 @@ jobs:
 
       # Step 2: Login to Azure using Service Principal creds
       - name: Azure Login
-        uses: azure/login@v2
+        uses: azure/login@v1.6.1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       # Step 3: Deploy to Azure Web App
       - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v
+        uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
           app-name: 'Findo'
