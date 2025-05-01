@@ -12,13 +12,13 @@ jobs:
 
     steps:
       # Step 1: Checkout the repository
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       # Step 2: Set up Python version
       - name: Set up Python version
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v3
         with:
-          python-version: '3.11'
+          python-version: '3.11.9'
 
       # Step 3: Create and start virtual environment, install dependencies
       - name: Create and start virtual environment
@@ -35,7 +35,7 @@ jobs:
 
       # Step 5: Upload artifact for deployment jobs
       - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: python-app
           path: release.zip
@@ -53,7 +53,7 @@ jobs:
     steps:
       # Step 1: Download artifact from build job
       - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: python-app
 
@@ -80,7 +80,7 @@ jobs:
 
       # Step 4: Login to Azure using Service Principal creds
       - name: Azure Login
-        uses: azure/login@v1.6.1
+        uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
