@@ -1,0 +1,15 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Launch Edge against 192.168.1.12",
+            "url": "http://192.168.1.12:8000/",
+            "webRoot": "${workspaceFolder}" // Adjust if your web files are in a specific subfolder
+        }
+    ]
+}
