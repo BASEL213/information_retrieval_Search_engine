@@ -61,4 +61,4 @@ jobs:
           app-name: 'Findo'
           slot-name: 'Production'
           package: .
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_534D96D959C94F22B901C8EFB02B8E02 }}
+          publish-profile: ${{ secrets.MY_SECRECT_2 }}
