@@ -64,13 +64,21 @@ jobs:
         with:
           name: python-app
 
-      # Step 2: Login to Azure using Service Principal creds
+      # Step 2: Debug Azure Login Action Availability
+      - name: Check Azure Login Action
+        shell: bash
+        run: |
+          echo "Attempting to use azure/login@v3"
+          curl -s -I https://github.com/azure/login/releases/tag/v3 | grep "HTTP/"
+        continue-on-error: true
+
+      # Step 3: Login to Azure using Service Principal creds
       - name: Azure Login
-        uses: azure/login@v3
+        uses: azure/login@v3.0.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Step 3: Deploy to Azure Web App
+      # Step 4: Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
