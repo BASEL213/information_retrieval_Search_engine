@@ -57,13 +57,24 @@ jobs:
         with:
           name: python-app
 
-      # Step 2: Login to Azure using Service Principal creds
+      # Step 2: Debug Secret Presence
+      - name: Debug Secret Presence
+        shell: powershell
+        run: |
+          if ("${{ secrets.AZURE_CREDENTIALS }}" -eq "") {
+            Write-Output "Error: AZURE_CREDENTIALS secret is not set or empty"
+            exit 1
+          } else {
+            Write-Output "AZURE_CREDENTIALS secret is set"
+          }
+
+      # Step 3: Login to Azure using Service Principal creds
       - name: Azure Login
         uses: azure/login@v1.6.1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Step 3: Deploy to Azure Web App
+      # Step 4: Deploy to Azure Web App
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
@@ -71,3 +82,8 @@ jobs:
           app-name: 'Findo'
           slot-name: 'Production'
           package: release.zip
+
+      # Step 5: Post Azure Login
+      - name: Post Azure Login
+        if: always()
+        run: echo "Post Azure Login step"
